@@ -10,5 +10,5 @@ get_rts_data <- function(redcap_api_token) {
     redcap_uri = "https://redcap.uoregon.edu/api/",
     token = redcap_api_token,
     format = "json"
-  )
+  )$data
 }

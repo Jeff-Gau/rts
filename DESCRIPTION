@@ -1,0 +1,26 @@
+Package: rts
+Title: Returns data from the Return to School project
+Version: 0.0.0.9000
+Authors@R: c(
+    person(given = "Daniel",
+           family = "Anderson",
+           role = c("aut", "cre"),
+           email = "daniela@uoregon.edu",
+           comment = c(ORCID = "https://orcid.org/0000-0003-4699-4680")),
+    person(given = "Jeff",
+           family = "Gau",
+           role = "aut",
+           email = "jeffg@uoregon.edu")
+ )
+Description: Returns data from REDCap API for the Return to School project at 
+             the University of Oregon on traumatic brain injury. Also includes 
+             a few helper functions for working with the data.
+License: CC BY 4.0
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports:
+    REDCapR
+remotes: 
+    datalorax/REDCapR

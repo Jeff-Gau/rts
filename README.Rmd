@@ -38,7 +38,7 @@ After you've completed this, you can download the raw data with the following co
 
 ```{r example, message = FALSE}
 library(rts)
-d <- get_rts_data(Sys.getenv("redcap_rts_token"))
+d <- get_rts_data()
 
 nrow(d)
 ncol(d)

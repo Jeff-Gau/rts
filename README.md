@@ -34,10 +34,10 @@ following code.
 
 ``` r
 library(rts)
-d <- get_rts_data(Sys.getenv("redcap_rts_token"))
+d <- get_rts_data()
 
 nrow(d)
-#> [1] 85
+#> [1] 99
 ncol(d)
 #> [1] 5490
 ```

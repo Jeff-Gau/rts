@@ -6,9 +6,7 @@
 \alias{rts-package}
 \title{rts: Returns data from the Return to School project}
 \description{
-Returns data from REDCap API for the Return to School project at 
-             the University of Oregon on traumatic brain injury. Also includes 
-             a few helper functions for working with the data.
+Returns data from REDCap API for the Return to School project at the University of Oregon on traumatic brain injury. Also includes a few helper functions for working with the data.
 }
 \author{
 \strong{Maintainer}: Daniel Anderson \email{daniela@uoregon.edu} (\href{https://orcid.org/0000-0003-4699-4680}{ORCID})

@@ -4,10 +4,11 @@
 \alias{get_rts_data}
 \title{Return full REDCap data}
 \usage{
-get_rts_data(redcap_api_token)
+get_rts_data(redcap_api_token = redcap_key())
 }
 \arguments{
-\item{redcap_api_token}{The API token from REDCap, passed as a string}
+\item{redcap_api_token}{The API token from REDCap. Defaults to
+\code{\link[=redcap_key]{redcap_key()}}}
 }
 \value{
 A data frame with the raw data

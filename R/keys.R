@@ -45,22 +45,11 @@ redcap_key <- function() {
 #' }
 redcap_set_key <- function(key, overwrite = FALSE) {
   token <- paste0('redcap_rts_token = "', key, '"')
+  home <- path.expand("~")
+  home_files <- list.files(home, all.files = TRUE)
 
-  # create .Renviron if it doesn't already exist
-  if (is_unix()) {
-    home <- system("eval echo $HOME", intern = TRUE)
-    if (!any(grepl("\\.Renviron", system("ls -a $HOME", intern = TRUE)))) {
-      system("touch $HOME/.Renviron")
-    }
-  } else {
-    home <- system("echo %homedrive%%homepath%")
-    if (
-      !is.null(
-        system("dir %homedrive%%homepath% .Renviron", intern = TRUE)
-      )
-    ) {
-      system("copy nul '.Renviron'")
-    }
+  if (!any(grepl("\\.Renviron", home_files))) {
+    dir.create(file.path(home, ".Renviron"))
   }
 
   renviron <- readLines(file.path(home, ".Renviron"))
@@ -80,8 +69,4 @@ redcap_set_key <- function(key, overwrite = FALSE) {
   }
   writeLines(renviron, file.path(home, ".Renviron"))
   message("Make sure to restart R for changes to take effect")
-}
-
-is_unix <- function() {
-  .Platform$OS.type == "unix"
 }

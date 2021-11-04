@@ -69,7 +69,6 @@ redcap_set_key <- function(key, overwrite = FALSE) {
   if (length(current_token) > 0) {
     if (overwrite) {
       renviron[current_token] <- token
-
     } else {
       stop("`redcap_rts_token` already exists in .Renviron. ",
            "Run again with `overwrite = TRUE` to overwrite the existing key.",

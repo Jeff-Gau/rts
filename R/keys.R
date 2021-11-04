@@ -47,22 +47,33 @@ redcap_set_key <- function(key, overwrite = FALSE) {
   token <- paste0('redcap_rts_token = "', key, '"')
 
   # create .Renviron if it doesn't already exist
-  if (!any(grepl("\\.Renviron", system("ls -a $HOME", intern = TRUE)))) {
-    system("touch $HOME/.Renviron")
+  if (is_unix()) {
+    home <- system("eval echo $HOME", intern = TRUE)
+    if (!any(grepl("\\.Renviron", system("ls -a $HOME", intern = TRUE)))) {
+      system("touch $HOME/.Renviron")
+    }
+  } else {
+    home <- system("echo %homedrive%%homepath%")
+    if (
+      !is.null(
+        system("dir %homedrive%%homepath% .Renviron", intern = TRUE)
+      )
+    ) {
+      system("copy nul '.Renviron'")
+    }
   }
 
-  home <- system("eval echo $HOME", intern = TRUE)
   renviron <- readLines(file.path(home, ".Renviron"))
 
   current_token <- grep("redcap_rts_token", renviron)
   if (length(current_token) > 0) {
     if (overwrite) {
       renviron[current_token] <- token
+
     } else {
       stop("`redcap_rts_token` already exists in .Renviron. ",
-        "Run again with `overwrite = TRUE` to overwrite the existing key.",
-        call. = FALSE
-      )
+           "Run again with `overwrite = TRUE` to overwrite the existing key.",
+           call. = FALSE)
     }
   } else {
     placement <- length(renviron) + 1
@@ -70,4 +81,8 @@ redcap_set_key <- function(key, overwrite = FALSE) {
   }
   writeLines(renviron, file.path(home, ".Renviron"))
   message("Make sure to restart R for changes to take effect")
+}
+
+is_unix <- function() {
+  .Platform$OS.type == "unix"
 }

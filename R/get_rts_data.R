@@ -1,8 +1,8 @@
 #' Return full REDCap data
 #'
 #' Returns the full data across all surveys
-#' @param redcap_api_token The API token from REDCap. Defaults to 
-#'   [redcap_key()]
+#' @param redcap_api_token The API token from REDCap. Defaults to
+#'   [rts::redcap_key()]
 #' @return A data frame with the raw data
 #' @export
 

@@ -14,27 +14,49 @@ sanitize_names <- function(df, pattern) {
 
 #' Returns parent survey data
 #'
-#' @param d The full data. Output from [get_rts_data]
+#' @param d The full data. Output from [rts::get_rts_data()]
 #' @param schedule The assessment schedule. Defaults to \code{baseline}.
-#'   Should be one of \code{"baseline"}, \code{"2"}, \code{"4"}, \code{"8"}, 
-#'   \code{"12"}, \code{"24"}, or \code{"end"}. 
-#' @param severity The severity of the TBI. Defaults to \code{"mild/moderate"}.
-#'   Should be one of \code{"mild/moderate"} or \code{"severe"}.
+#'   Should be one of \code{"baseline"}, \code{"2"}, \code{"4"}, \code{"8"},
+#'   \code{"12"}, \code{"24"}, or \code{"end"}.
+#' @param severity The severity of the TBI. Defaults to \code{"mild"}.
+#'   Should be one of \code{"mild"} or \code{"moderate/severe"}.
 #' @export
-get_parent <- function(d, schedule = "baseline", severity = "mild/moderate") {
-  # if (severity == "mild/moderate") {
-  #   mild0_parent_survey_complete == 2
-  # } else if (severity == "severe") {
-  #   mild0_parent_survey_complete == 1
-  # }
+get_parent <- function(d, schedule = "baseline", severity = "mild") {
 
+  # severity_selection <- ifelse(
+  #   severity == "mild", 1, ifelse(
+  #     severity == "moderate/severe", 2,
+  #     stop("`severity` must be one of `\"mild\"` or `\"moderate/severe\"`",
+  #          call. = FALSE)
+  #   )
+  # )
+
+  if (schedule == "baseline") {
+    schedule_selection <- "baseline_arm_1"
+  } else if (schedule == "end") {
+    schedule_selection <- "end_of_study_arm_1"
+  } else {
+    schedule_selection <- paste0(schedule, "_weeks_arm_1")
+  }
+
+
+  return(var_select)
   # the arguments passed to subset will depend on the values passed to
   # \code{schedule} and \code{severity}
-  row_select <- d$redcap_event_name == "baseline_arm_1" &
+  row_select <- d$redcap_event_name == schedule_selection &
                   d$mild0_parent_survey_complete == 2
-  col_select <- c(
-    1,
-    grep("pdem_1_m0", names(d)):grep("sssu_4_m0", names(d))
+
+  # col_select <- c(
+  #   1,
+  #   grep("pdem_1_m0", names(d)):grep("sssu_4_m", names(d))
+  # )
+
+  # Jeff to fill in
+  col_select <- switch(
+    paste0(severity, "-", schedule),
+    "mild-baseline" = grep("pdem_1_m0", names(d)):grep("sssu_4_m0", names(d)),
+    "moderate/severe-baseline" = "xxx",
+    "mild-2" = "yyy"
   )
   d2 <- d[row_select, col_select]
 
@@ -54,22 +76,4 @@ get_parent <- function(d, schedule = "baseline", severity = "mild/moderate") {
   names(d2) <- c("id", nms_sanitized)
   d2
 }
-
-
-# nrow(d)
-# ncol(d)
-
-# nrow(d2)
-# ncol(d2)
-
-#Renaming and computing new variables
-# ppcsi_vars <- grep("^ppcsi", names(d2))
-# tmp <- names(d2)[ppcsi_vars]
-# tmp2 <- gsub("ppcsi_", "ppcsi0_", tmp)
-# tmp2 <- gsub("_m0", "", tmp2)
-
-
-
-# apply the function
-# sanitize_names(d2, "pclass")
-
+get_parent(d, severity = "mild", schedule = 2)

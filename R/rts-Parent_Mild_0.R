@@ -17,7 +17,7 @@ sanitize_names <- function(df, pattern) {
 #' @param d The full data. Output from [rts::get_rts_data()]
 #' @param schedule The assessment schedule. Defaults to \code{baseline}.
 #'   Should be one of \code{"baseline"}, \code{"2"}, \code{"4"}, \code{"8"},
-#'   \code{"12"}, \code{"24"}, or \code{"end"}.
+#'   \code{"12"}, \code{"24"}, \code{"36"}, or \code{"end"}.
 #' @param severity The severity of the TBI. Defaults to \code{"mild"}.
 #'   Should be one of \code{"mild"} or \code{"moderate/severe"}.
 #' @export
@@ -55,8 +55,15 @@ get_parent <- function(d, schedule = "baseline", severity = "mild") {
   col_select <- switch(
     paste0(severity, "-", schedule),
     "mild-baseline" = grep("pdem_1_m0", names(d)):grep("sssu_4_m0", names(d)),
-    "moderate/severe-baseline" = "xxx",
-    "mild-2" = "yyy"
+    "mild-2" = grep("chdage_m2", names(d)):grep("sssu_4_m2", names(d)),
+    "mild-4" = grep("chdage_m4", names(d)):grep("sssu_4_m4", names(d)),
+    "mild-8" = grep("chdage_m8", names(d)):grep("sssu_4_m8", names(d)),
+    "mild-12" = grep("chdage_m12", names(d)):grep("sssu_4_m12", names(d)),
+    "mild-24" = grep("chdage_m24", names(d)):grep("sssu_4_m24", names(d)),
+    "mild-36" = grep("chdage_m36", names(d)):grepsat_5p("sssu_4_m36", names(d)),
+    "mild-end" = grep("psat_1", names(d)):grep("", names(d)),
+    "moderate/severe-baseline" = grep("pdem_1_s0", names(d)):grep("pclass_18c_s0", names(d)),
+    "moderate/severe-baseline" = grep("pcovid_1_s4", names(d)):grep("sssu_4_s4", names(d)),
   )
   d2 <- d[row_select, col_select]
 

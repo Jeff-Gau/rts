@@ -7,9 +7,19 @@
 sanitize_names <- function(df, pattern) {
   var_indices <- grep(paste0("^", pattern), names(df))
   nms <- names(df)[var_indices]
-  out <- gsub(paste0(pattern, "_"), paste0(pattern, "0_"), nms)
-  out <- gsub("_m0", "", out)
+  digit <- gsub(".+_m(\\d?\\d?\\d)$", "\\1", nms)
+  digit <- unique(digit[nchar(digit) == 1])
+
+  out <- gsub(paste0(pattern, "_"), paste0(pattern, digit, "_"), nms)
+  out <- gsub("_m\\d?\\d?\\d", "", out)
   gsub("___", ".", out)
+}
+
+
+simple_cap <- function(x) {
+  s <- strsplit(x, " ")[[1]]
+  paste(toupper(substring(s, 1, 1)), substring(s, 2),
+        sep = "", collapse = " ")
 }
 
 #' Returns parent survey data
@@ -17,70 +27,43 @@ sanitize_names <- function(df, pattern) {
 #' @param d The full data. Output from [rts::get_rts_data()]
 #' @param schedule The assessment schedule. Defaults to \code{baseline}.
 #'   Should be one of \code{"baseline"}, \code{"2"}, \code{"4"}, \code{"8"},
-#'   \code{"12"}, \code{"24"}, \code{"36"}, or \code{"end"}.
+#'   \code{"12"}, \code{"24"}, \code{"36"}, \code{"52"}, \code{"104"} or
+#'   \code{"end"}.
 #' @param severity The severity of the TBI. Defaults to \code{"mild"}.
 #'   Should be one of \code{"mild"} or \code{"moderate/severe"}.
+#' @param survey The survey to retrieve. Should be one of \code{"parent"},
+#'   \code{"student"}, \code{"teacher1"}, or \code{"teacher2"}.
 #' @export
-get_parent <- function(d, schedule = "baseline", severity = "mild") {
+get_survey <- function(d, severity = "mild", schedule = "baseline",
+                       survey = "parent") {
+  row_select <- redcap_dict$arm == severity &
+    gsub(" Weeks", "", redcap_dict$Assessment) == simple_cap(schedule) &
+    redcap_dict$Instrument == paste(simple_cap(survey), "Survey")
 
-  # severity_selection <- ifelse(
-  #   severity == "mild", 1, ifelse(
-  #     severity == "moderate/severe", 2,
-  #     stop("`severity` must be one of `\"mild\"` or `\"moderate/severe\"`",
-  #          call. = FALSE)
-  #   )
-  # )
-
-  if (schedule == "baseline") {
-    schedule_selection <- "baseline_arm_1"
-  } else if (schedule == "end") {
-    schedule_selection <- "end_of_study_arm_1"
-  } else {
-    schedule_selection <- paste0(schedule, "_weeks_arm_1")
+  # Jeff to work on building out error messages if data doesn't exist
+  tst <- redcap_dict[redcap_dict$arm == severity, ]
+  if (!schedule %in% gsub(" Weeks", "", tst$Assessment)) {
+    stop("schedule don't work",
+         call. = FALSE)
   }
 
+  selection <- redcap_dict[row_select, ]
 
-  return(var_select)
-  # the arguments passed to subset will depend on the values passed to
-  # \code{schedule} and \code{severity}
-  row_select <- d$redcap_event_name == schedule_selection &
-                  d$mild0_parent_survey_complete == 2
+  d_rows <- d[["redcap_event_name"]] == selection[["redcap_event_name"]] &
+    d[selection$completed_var] == 2
 
-  # col_select <- c(
-  #   1,
-  #   grep("pdem_1_m0", names(d)):grep("sssu_4_m", names(d))
-  # )
+  first <- grep(paste0("^", selection$first_var_selection, "$"), names(d))
+  last <- grep(paste0("^", selection$final_var_selection, "$"), names(d))
 
-  # Jeff to fill in
-  col_select <- switch(
-    paste0(severity, "-", schedule),
-    "mild-baseline" = grep("pdem_1_m0", names(d)):grep("sssu_4_m0", names(d)),
-    "mild-2" = grep("chdage_m2", names(d)):grep("sssu_4_m2", names(d)),
-    "mild-4" = grep("chdage_m4", names(d)):grep("sssu_4_m4", names(d)),
-    "mild-8" = grep("chdage_m8", names(d)):grep("sssu_4_m8", names(d)),
-    "mild-12" = grep("chdage_m12", names(d)):grep("sssu_4_m12", names(d)),
-    "mild-24" = grep("chdage_m24", names(d)):grep("sssu_4_m24", names(d)),
-    "mild-36" = grep("chdage_m36", names(d)):grepsat_5p("sssu_4_m36", names(d)),
-    "mild-end" = grep("psat_1", names(d)):grep("", names(d)),
-    "moderate/severe-baseline" = grep("pdem_1_s0", names(d)):grep("pclass_18c_s0", names(d)),
-    "moderate/severe-baseline" = grep("pcovid_1_s4", names(d)):grep("sssu_4_s4", names(d)),
-  )
-  d2 <- d[row_select, col_select]
+  out <- d[d_rows, c(1, first:last)]
 
-  # d2 <- subset(
-  #   d,
-  #   redcap_event_name == "baseline_arm_1" & mild0_parent_survey_complete == 2,
-  #   select = c(record_id, pdem_1_m0:sssu_4_m0)
-  # )
-  # eventually we will automatically sanitize all names
   nms <- unique(
-    vapply(strsplit(names(d2), "_"), function(x) x[1], FUN.VALUE = character(1)
+    vapply(strsplit(names(out), "_"), function(x) x[1], FUN.VALUE = character(1)
     )
   )
   nms <- nms[-1]
-  nms_sanitized <- unlist(lapply(nms, function(x) sanitize_names(d2, x)))
+  nms_sanitized <- unlist(lapply(nms, function(x) sanitize_names(out, x)))
 
-  names(d2) <- c("id", nms_sanitized)
-  d2
+  names(out) <- c("id", nms_sanitized)
+  out
 }
-get_parent(d, severity = "mild", schedule = 2)

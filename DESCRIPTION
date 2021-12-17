@@ -24,3 +24,5 @@ Imports:
     REDCapR
 remotes: 
     OuhscBbmc/REDCapR
+Depends: 
+    R (>= 2.10)

@@ -42,7 +42,7 @@ get_survey <- function(d, severity = "mild", schedule = "baseline",
 
   # Jeff to work on building out error messages if data doesn't exist
   tst <- redcap_dict[redcap_dict$arm == severity, ]
-  if (!schedule %in% gsub(" Weeks", "", tst$Assessment)) {
+  if (!schedule %in% tolower(gsub(" Weeks", "", tst$Assessment))) {
     stop("schedule don't work",
          call. = FALSE)
   }

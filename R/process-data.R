@@ -15,11 +15,11 @@ sanitize_names <- function(df, pattern) {
   gsub("___", ".", out)
 }
 
-
-simple_cap <- function(x) {
-  s <- strsplit(x, " ")[[1]]
-  paste(toupper(substring(s, 1, 1)), substring(s, 2),
-        sep = "", collapse = " ")
+sanitize_schedule <- function(x) {
+  if (x == "baseline" | x == "end" | grepl("^\\d\\d? weeks$", x)) {
+    return(x)
+  }
+  paste(x, "weeks")
 }
 
 #' Returns parent survey data
@@ -31,18 +31,23 @@ simple_cap <- function(x) {
 #'   \code{"end"}.
 #' @param severity The severity of the TBI. Defaults to \code{"mild"}.
 #'   Should be one of \code{"mild"} or \code{"moderate/severe"}.
-#' @param survey The survey to retrieve. Should be one of \code{"parent"},
+#' @param respondent The survey to retrieve. Should be one of \code{"parent"},
 #'   \code{"student"}, \code{"teacher1"}, or \code{"teacher2"}.
+#' @param survey One of \code{"survey"}, \code{"information"}, or
+#'   \code{"satisfaction"}
 #' @export
 get_survey <- function(d, severity = "mild", schedule = "baseline",
-                       survey = "parent") {
+                       respondent = "parent", survey = "survey") {
+
+  data_collected <- paste(respondent, survey)
+
   row_select <- redcap_dict$arm == severity &
-    gsub(" Weeks", "", redcap_dict$Assessment) == simple_cap(schedule) &
-    redcap_dict$Instrument == paste(simple_cap(survey), "Survey")
+    redcap_dict$assessment == sanitize_schedule(schedule) &
+    grepl(paste0("^", data_collected), redcap_dict$instrument)
 
   # Jeff to work on building out error messages if data doesn't exist
   tst <- redcap_dict[redcap_dict$arm == severity, ]
-  if (!schedule %in% tolower(gsub(" Weeks", "", tst$Assessment))) {
+  if (!sanitize_schedule(schedule) %in% tst$assessment) {
     stop("schedule don't work",
          call. = FALSE)
   }
